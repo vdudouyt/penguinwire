@@ -17,6 +17,32 @@ void run_cmd(libusb_device_handle *dev, unsigned int op, uint8_t arg) {
    printf("Response: %02x\n", c);
 }
 
+void readROM(libusb_device_handle *dev) {
+   run_cmd(dev, CMD_RESET, 0);
+   run_cmd(dev, CMD_BYTE_IO, 0x33);
+
+   int i;
+   for(i = 0; i < 8; i++) {
+      run_cmd(dev, CMD_BYTE_IO, 0xff);
+   }
+}
+
+void readTemp(libusb_device_handle *dev) {
+   run_cmd(dev, CMD_RESET, 0);
+   run_cmd(dev, CMD_BYTE_IO, 0xCC); // Skip ROM
+   run_cmd(dev, CMD_BYTE_IO, 0x44); // Start conversion
+   sleep(1); // Wait
+   run_cmd(dev, CMD_RESET, 0);
+   run_cmd(dev, CMD_BYTE_IO, 0xCC); // Skip ROM
+   printf("*** Read scratchpad ***\n");
+   run_cmd(dev, CMD_BYTE_IO, 0xBE); // Read scratchpad
+
+   int i;
+   for(i = 0; i < 9; i++) {
+      run_cmd(dev, CMD_BYTE_IO, 0xff);
+   }
+}
+
 int main(int argc, char **argv) {
    int r;
    libusb_context *ctx = NULL;
@@ -25,13 +51,7 @@ int main(int argc, char **argv) {
    libusb_device_handle *dev = libusb_open_device_with_vid_pid(ctx, 0x1d50, 0x5711);
    assert(dev);
 
-   run_cmd(dev, CMD_RESET, 0);
-   run_cmd(dev, CMD_BYTE_IO, 0x33);
-
-   int i;
-   for(i = 0; i < 8; i++) {
-      run_cmd(dev, CMD_BYTE_IO, 0xff);
-   }
+   readTemp(dev);
 
    libusb_close(dev);
 }
