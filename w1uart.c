@@ -57,7 +57,7 @@ void Uart1_ISR() __interrupt (INT_NO_UART1) {
 
       switch(pendingOp) {
          case W1_RESET:
-            pendingCallbacks.resetCb(sbuf != 0xf0 && sbuf != 0);
+            pendingCallbacks.resetCb(sbuf);
             pendingOp = W1_NONE;
             break;
          case W1_WRITE:

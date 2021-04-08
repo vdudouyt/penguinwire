@@ -8,15 +8,19 @@ SBIT(LED, 0x90, 1);
 void Uart1_ISR() __interrupt (INT_NO_UART1);
 void USBInterrupt() __interrupt (INT_NO_USB);
 
-void onW1Reset(uint8_t status) {
-   LED = status > 0;
-}
+void onW1Reset(uint8_t status);
 
 void onEp0VendorSpecificRequest(USBSetupRequest *req) {
    if(req->bRequest == 1) {
-      Ep1Buffer[0]++;
-      UEP1_T_LEN = 1;
+      UEP1_CTRL = UEP1_CTRL & ~ MASK_UEP_T_RES | UEP_T_RES_NAK; // Busy
+      w1UartReset(onW1Reset);
    }
+}
+
+void onW1Reset(uint8_t gotByte) {
+   Ep1Buffer[0] = gotByte;
+   UEP1_T_LEN = 1;
+   UEP1_CTRL = UEP1_CTRL & ~ MASK_UEP_T_RES | UEP_T_RES_ACK;
 }
 
 void main() {
@@ -26,8 +30,6 @@ void main() {
    USBInit();
    w1UartInit();
    EA = 1;
-
-   w1UartReset(onW1Reset);
    
    while(1) { }
 }
