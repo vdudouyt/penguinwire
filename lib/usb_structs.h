@@ -1,3 +1,5 @@
+#pragma once
+
 typedef struct {
     uint8_t bRequestType;
     uint8_t bRequest;
