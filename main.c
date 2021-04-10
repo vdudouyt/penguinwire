@@ -1,5 +1,5 @@
 #include <compiler.h>
-#include "w1uart.h"
+#include "w1.h"
 #include "lib/ch554.h"
 #include "usb.h"
 
@@ -13,10 +13,10 @@ void onW1RecvByte(uint8_t status);
 void onEp0VendorSpecificRequest(USBSetupRequest *req) {
    if(req->bRequest == 1) {
       UEP1_CTRL = UEP1_CTRL & ~ MASK_UEP_T_RES | UEP_T_RES_NAK; // Busy
-      w1UartReset(onW1RecvByte);
+      w1Reset(onW1RecvByte);
    } else if(req->bRequest == 2) {
       UEP1_CTRL = UEP1_CTRL & ~ MASK_UEP_T_RES | UEP_T_RES_NAK; // Busy
-      w1UartWrite(req->wValue, onW1RecvByte);
+      w1Write(req->wValue, onW1RecvByte);
    }
 }
 
@@ -31,7 +31,7 @@ void main() {
    LED = 0;
 
    USBInit();
-   w1UartInit();
+   w1Init();
    EA = 1;
    
    while(1) { }

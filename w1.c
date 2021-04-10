@@ -1,4 +1,4 @@
-#include "w1uart.h"
+#include "w1.h"
 #include "lib/ch554.h"
 
 SBIT(LED, 0x90, 1);
@@ -16,7 +16,7 @@ __xdata struct {
 
 static uint8_t decodeByte(uint8_t *byteBuf);
 
-void w1UartInit() {
+void w1Init() {
    U1SM0 = 0;
    U1SMOD = 1;
    U1REN = 1;
@@ -26,7 +26,7 @@ void w1UartInit() {
    pendingOp = W1_NONE;
 }
 
-void w1UartReset(w1ResetCallback cb) {
+void w1Reset(w1ResetCallback cb) {
    pendingCallbacks.resetCb = cb;
    pendingOp = W1_RESET;
 
@@ -34,7 +34,7 @@ void w1UartReset(w1ResetCallback cb) {
    SBUF1 = 0xf0;
 }
 
-void w1UartWrite(uint8_t byte, w1WriteCallback cb) {
+void w1Write(uint8_t byte, w1WriteCallback cb) {
    uint8_t i = 0;
 
    for(i = 0; i < 8; i++) {
