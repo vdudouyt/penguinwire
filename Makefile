@@ -3,7 +3,7 @@ all: penguinwire.bin
 %.bin: %.ihx
 	objcopy -I ihex -O binary $< $@
 
-penguinwire.ihx: main.rel w1.rel usb.rel
+penguinwire.ihx: main.rel w1.rel w1_search_devices.rel usb.rel
 	sdcc $^ -o $@
 
 %.rel: %.c

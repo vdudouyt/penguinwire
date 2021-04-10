@@ -5,6 +5,7 @@
 
 #define CMD_RESET 0x01
 #define CMD_BYTE_IO 0x02
+#define CMD_SEARCH_ROM 0x03
 
 void run_cmd(libusb_device_handle *dev, unsigned int op, uint8_t arg) {
    printf("run_cmd(%d, %02x)\n", op, arg);
@@ -43,6 +44,24 @@ void readTemp(libusb_device_handle *dev) {
    }
 }
 
+void searchDevices(libusb_device_handle *dev) {
+   libusb_control_transfer(dev, 0x40, CMD_SEARCH_ROM, 0, 0, NULL, 0, 0);
+
+   unsigned char buf[64];
+   int actual_length;
+   libusb_bulk_transfer(dev, 0x81, buf, sizeof(buf), &actual_length, 0);
+   assert(actual_length);
+
+   printf("Got device: ");
+
+   int i;
+   for(i = 0; i < 64; i++) {
+      printf("%02x ", buf[i]);
+   }
+
+   printf("\n");
+}
+
 int main(int argc, char **argv) {
    int r;
    libusb_context *ctx = NULL;
@@ -51,7 +70,7 @@ int main(int argc, char **argv) {
    libusb_device_handle *dev = libusb_open_device_with_vid_pid(ctx, 0x1d50, 0x5711);
    assert(dev);
 
-   readTemp(dev);
+   searchDevices(dev);
 
    libusb_close(dev);
 }

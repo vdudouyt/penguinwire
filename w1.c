@@ -3,7 +3,7 @@
 
 SBIT(LED, 0x90, 1);
 
-enum { W1_NONE = 0, W1_RESET, W1_WRITE, W1_SEARCH_DEVICES } pendingOp;
+enum { W1_NONE = 0, W1_RESET, W1_WRITE, W1_WRITE_BIT } pendingOp;
 
 __xdata uint8_t sendByteBuf[8], recvByteBuf[8];
 uint8_t sendCtr, recvCtr;
@@ -11,7 +11,6 @@ uint8_t sendCtr, recvCtr;
 __xdata struct {
    w1ResetCallback resetCb;
    w1WriteCallback writeCb;
-   w1FoundDeviceCallback searchCb;
 } pendingCallbacks;
 
 static uint8_t decodeByte(uint8_t *byteBuf);
@@ -51,26 +50,38 @@ void w1Write(uint8_t byte, w1WriteCallback cb) {
    sendCtr++;
 }
 
+void w1WriteBit(uint8_t bit, w1WriteCallback cb) {
+   pendingCallbacks.writeCb = cb;
+   pendingOp = W1_WRITE_BIT;
+
+   SBAUD1 = 253; // 115200 baud
+   SBUF1 = bit ? 0xff : 0x00;
+}
+
 void Uart1_ISR() __interrupt (INT_NO_UART1) {
    if(U1RI) {
       uint8_t sbuf = SBUF1;
 
       switch(pendingOp) {
          case W1_RESET:
-            pendingCallbacks.resetCb(sbuf);
             pendingOp = W1_NONE;
+            pendingCallbacks.resetCb(sbuf);
             break;
          case W1_WRITE:
             recvByteBuf[recvCtr] = sbuf;
             recvCtr++;
 
             if(sendCtr >= 8) {
-               pendingCallbacks.writeCb(decodeByte(recvByteBuf));
                pendingOp = W1_NONE;
+               pendingCallbacks.writeCb(decodeByte(recvByteBuf));
             } else {
                SBUF1 = sendByteBuf[sendCtr];
                sendCtr++;
             }
+            break;
+         case W1_WRITE_BIT:
+            pendingOp = W1_NONE;
+            pendingCallbacks.writeCb(sbuf);
             break;
       }
 
