@@ -47,7 +47,7 @@ void readTemp(libusb_device_handle *dev) {
 void searchDevices(libusb_device_handle *dev) {
    libusb_control_transfer(dev, 0x40, CMD_SEARCH_ROM, 0, 0, NULL, 0, 0);
 
-   unsigned char buf[64];
+   unsigned char buf[8];
    int actual_length;
    libusb_bulk_transfer(dev, 0x81, buf, sizeof(buf), &actual_length, 0);
    assert(actual_length);
@@ -55,7 +55,7 @@ void searchDevices(libusb_device_handle *dev) {
    printf("Got device: ");
 
    int i;
-   for(i = 0; i < 64; i++) {
+   for(i = 0; i < sizeof(buf); i++) {
       printf("%02x ", buf[i]);
    }
 

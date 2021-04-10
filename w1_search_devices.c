@@ -19,6 +19,8 @@ static void onReadBit(uint8_t gotByte);
 static void onReadBitInv(uint8_t gotByte);
 static void onWriteBit(uint8_t gotByte);
 
+static uint8_t decodeByte(uint8_t *byteBuf);
+
 void w1SearchDevices(w1SearchDeviceCallback cb) {
    searchDeviceCallback = cb;
    w1Reset(onW1Reset);
@@ -80,8 +82,15 @@ void onReadBitInv(uint8_t gotByte) {
    if(rIdx < 64) {
       return w1WriteBit(b & 0x01, onWriteBit);
    } else {
+      uint8_t romID[8];
+
+      uint8_t i;
+      for(i = 0; i < 8; i++) {
+         romID[i] = decodeByte(&buf[i * 8]);
+      }
+
       ctx.status = W1SEARCH_DEVICE_FOUND;
-      ctx.romID = buf;
+      ctx.romID = romID;
       searchDeviceCallback(&ctx);
    }
 }
@@ -89,4 +98,14 @@ void onReadBitInv(uint8_t gotByte) {
 void onWriteBit(uint8_t gotByte) {
    (void)(gotByte);
    w1WriteBit(1, onReadBit);
+}
+
+uint8_t decodeByte(uint8_t *byteBuf) {
+   uint8_t byte = 0;
+   int i;
+   for(i = 7; i >= 0; i--) {
+      byte |= byteBuf[i] & 0x01;
+      if(i > 0) byte <<= 1;
+   }
+   return byte;
 }

@@ -33,8 +33,8 @@ void onW1RecvByte(uint8_t gotByte) {
 }
 
 bool onW1SearchDevice(w1SearchCtx *ctx) {
-   memcpy(Ep1Buffer, ctx->romID, 64);
-   UEP1_T_LEN = 64;
+   memcpy(Ep1Buffer, ctx->romID, 8);
+   UEP1_T_LEN = 8;
    UEP1_CTRL = UEP1_CTRL & ~ MASK_UEP_T_RES | UEP_T_RES_ACK;
    (void) (ctx);
    return false;
