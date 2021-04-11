@@ -13,7 +13,7 @@ __xdata struct {
    w1WriteCallback writeCb;
 } pendingCallbacks;
 
-static uint8_t decodeByte(uint8_t *byteBuf);
+static uint8_t decodeByte(__xdata uint8_t *byteBuf);
 
 void w1Init() {
    U1SM0 = 0;
@@ -92,7 +92,7 @@ void Uart1_ISR() __interrupt (INT_NO_UART1) {
    }
 }
 
-uint8_t decodeByte(uint8_t *byteBuf) {
+uint8_t decodeByte(__xdata uint8_t *byteBuf) {
    uint8_t byte = 0;
    int i;
    for(i = 7; i >= 0; i--) {
