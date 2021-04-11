@@ -10,6 +10,10 @@ uint8_t rIdx = 0;
 __xdata uint8_t buf[64];
 __xdata w1SearchDeviceCallback searchDeviceCallback;
 
+__xdata uint8_t *getBuf() {
+   return buf;
+}
+
 #define BRANCH_FLAG 0x02
 
 static void onW1Reset(uint8_t gotByte);
@@ -20,6 +24,10 @@ static void onReadBitInv(uint8_t gotByte);
 static void onWriteBit(uint8_t gotByte);
 
 static uint8_t decodeByte(__xdata uint8_t *byteBuf);
+
+void w1InitBuf() {
+   memset(buf, 0, sizeof(buf));
+}
 
 void w1SearchDevices(w1SearchDeviceCallback cb) {
    searchDeviceCallback = cb;
@@ -48,7 +56,6 @@ void onSearchCmdSent(uint8_t gotByte) {
 
    /* Starting 2-read 1-write 64 bit search sequence described in DS manuals */
    rIdx = 0;
-   memset(buf, 0, sizeof(buf));
    w1WriteBit(1, onReadBit);
 }
 
@@ -73,6 +80,7 @@ void onReadBitInv(uint8_t gotByte) {
       /* Two or more devices are holding the line simultaneously, make a branch here */
       /* As you probably mentioned, an existing value in buf[] is getting preserved */
       buf[rIdx] |= BRANCH_FLAG;
+      b = buf[rIdx];
    } else {
       buf[rIdx] = b;
    }
@@ -108,4 +116,17 @@ uint8_t decodeByte(__xdata uint8_t *byteBuf) {
       if(i > 0) byte <<= 1;
    }
    return byte;
+}
+
+int nextBranch() {
+   int i;
+   for(i = 63; i >= 0; i--) {
+      if(buf[i] == 2) {
+         buf[i] = 0x01;   // flip bit
+         return true;      // there's one more branch to visit
+      } else {
+         buf[i] = 0;
+      }
+   }
+   return false;
 }

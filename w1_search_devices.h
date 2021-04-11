@@ -7,3 +7,6 @@ typedef struct {
 
 typedef bool (*w1SearchDeviceCallback) (__xdata w1SearchCtx *ctx);
 void w1SearchDevices(w1SearchDeviceCallback cb);
+__xdata uint8_t *getBuf();
+int nextBranch();
+void w1InitBuf();

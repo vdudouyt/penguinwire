@@ -23,6 +23,17 @@ void onEp0VendorSpecificRequest(__xdata USBSetupRequest *req) {
    } else if(req->bRequest == 3) {
       UEP1_CTRL = UEP1_CTRL & ~ MASK_UEP_T_RES | UEP_T_RES_NAK; // Busy
       w1SearchDevices(onW1SearchDevice);
+   } else if(req->bRequest == 4) {
+      __xdata uint8_t *buf = getBuf();
+      int i;
+      for(i = 0; i < 64; i++) {
+         Ep1Buffer[i] = buf[i];
+      }
+      UEP1_T_LEN = 64;
+   } else if(req->bRequest == 5) {
+      nextBranch();
+   } else if(req->bRequest == 6) {
+      w1InitBuf();
    }
 }
 
