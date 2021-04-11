@@ -114,7 +114,7 @@ void Ep0Handler() {
    unsigned char token = USB_INT_ST & MASK_UIS_TOKEN;
 
    if(token == UIS_TOKEN_SETUP && USB_RX_LEN == sizeof(USBSetupRequest)) {
-      USBSetupRequest *setupReq = (USBSetupRequest*) Ep0Buffer;
+      __xdata USBSetupRequest *setupReq = (USBSetupRequest*) Ep0Buffer;
       uint8_t bytesToTransmit = 0;
 
       if(setupReq->bRequestType == USB_REQ_TYP_VENDOR) {
