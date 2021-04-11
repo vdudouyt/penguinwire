@@ -99,9 +99,9 @@ void onReadBitInv(uint8_t gotByte) {
       ctx.status = W1SEARCH_DEVICE_FOUND;
       ctx.done = !has_more;
       ctx.romID = romID;
-      searchDeviceCallback(&ctx);
+      bool need_more = searchDeviceCallback(&ctx);
 
-      if(has_more) {
+      if(has_more && need_more) {
          w1Reset(onW1Reset);
       }
    }

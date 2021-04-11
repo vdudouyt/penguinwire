@@ -47,11 +47,14 @@ void onW1RecvByte(uint8_t gotByte) {
 bool onW1SearchDevice(__xdata w1SearchCtx *ctx) {
    memcpy(&Ep1Buffer[wIdx * 8], ctx->romID, 8);
    wIdx++;
-   if(!ctx->done) return false;
 
-   UEP1_T_LEN = wIdx * 8;
-   UEP1_CTRL = UEP1_CTRL & ~ MASK_UEP_T_RES | UEP_T_RES_ACK;
-   return false;
+   if(ctx->done || wIdx >= 8) {
+      UEP1_T_LEN = wIdx * 8;
+      UEP1_CTRL = UEP1_CTRL & ~ MASK_UEP_T_RES | UEP_T_RES_ACK;
+      return false;
+   }
+
+   return true; // Read more
 }
 
 void main() {
