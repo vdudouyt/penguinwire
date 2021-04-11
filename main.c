@@ -11,9 +11,9 @@ void Uart1_ISR() __interrupt (INT_NO_UART1);
 void USBInterrupt() __interrupt (INT_NO_USB);
 
 void onW1RecvByte(uint8_t status);
-bool onW1SearchDevice(w1SearchCtx *ctx);
+bool onW1SearchDevice(__xdata w1SearchCtx *ctx);
 
-void onEp0VendorSpecificRequest(USBSetupRequest *req) {
+void onEp0VendorSpecificRequest(__xdata USBSetupRequest *req) {
    if(req->bRequest == 1) {
       UEP1_CTRL = UEP1_CTRL & ~ MASK_UEP_T_RES | UEP_T_RES_NAK; // Busy
       w1Reset(onW1RecvByte);
@@ -32,7 +32,7 @@ void onW1RecvByte(uint8_t gotByte) {
    UEP1_CTRL = UEP1_CTRL & ~ MASK_UEP_T_RES | UEP_T_RES_ACK;
 }
 
-bool onW1SearchDevice(w1SearchCtx *ctx) {
+bool onW1SearchDevice(__xdata w1SearchCtx *ctx) {
    memcpy(Ep1Buffer, ctx->romID, 8);
    UEP1_T_LEN = 8;
    UEP1_CTRL = UEP1_CTRL & ~ MASK_UEP_T_RES | UEP_T_RES_ACK;
