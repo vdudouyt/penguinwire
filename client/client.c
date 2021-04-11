@@ -47,15 +47,16 @@ void readTemp(libusb_device_handle *dev) {
 void searchDevices(libusb_device_handle *dev) {
    libusb_control_transfer(dev, 0x40, CMD_SEARCH_ROM, 0, 0, NULL, 0, 0);
 
-   unsigned char buf[8];
+   unsigned char buf[64];
    int actual_length;
    libusb_bulk_transfer(dev, 0x81, buf, sizeof(buf), &actual_length, 0);
    assert(actual_length);
 
-   printf("Got device: ");
+   printf("Got devices: ");
 
    int i;
-   for(i = 0; i < sizeof(buf); i++) {
+   for(i = 0; i < actual_length; i++) {
+      if(i % 8 == 0) printf("\n");
       printf("%02x ", buf[i]);
    }
 
@@ -80,12 +81,8 @@ void printInternalBuf(libusb_device_handle *dev) {
    printf("\n");
 }
 
-void nextBranch(libusb_device_handle *dev) {
+void runAUT(libusb_device_handle *dev) {
    libusb_control_transfer(dev, 0x40, 5, 0, 0, NULL, 0, 0);
-}
-
-void initBuf(libusb_device_handle *dev) {
-   libusb_control_transfer(dev, 0x40, 6, 0, 0, NULL, 0, 0);
 }
 
 int main(int argc, char **argv) {
@@ -96,7 +93,6 @@ int main(int argc, char **argv) {
    libusb_device_handle *dev = libusb_open_device_with_vid_pid(ctx, 0x1d50, 0x5711);
    assert(dev);
 
-   initBuf(dev);
    searchDevices(dev);
 
    libusb_close(dev);
