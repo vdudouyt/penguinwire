@@ -5,6 +5,7 @@
 #include "lib/ch554.h"
 #include "usb.h"
 #include "ds2490.h"
+#include "ds_status.h"
 
 SBIT(LED, 0x90, 1);
 
@@ -31,6 +32,9 @@ void onEp0VendorSpecificRequest(__xdata USBSetupRequest *setupReq) {
       case COMM_SEARCH_ACCESS:
          SET_TX_NAK(UEP3_CTRL);
          wIdx = 0;
+
+         struct ds_status *status = (struct ds_status*) Ep1Buffer;
+         status->status = status->data_in_buffer_status = 0;
          w1SearchDevices(onW1SearchDevice);
          break;
    }
@@ -52,6 +56,9 @@ bool onW1SearchDevice(__xdata w1SearchCtx *ctx) {
 
    if(ctx->done || wIdx >= 8) {
       UEP3_T_LEN = wIdx * 8;
+      struct ds_status *status = (struct ds_status*) Ep1Buffer;
+      status->status = ST_IDLE | ST_HALT;
+      status->data_in_buffer_status = 1;
       SET_TX_ACK(UEP3_CTRL);
       return false;
    }
@@ -65,6 +72,10 @@ void main() {
 
    USBInit();
    w1Init();
+
+   UEP1_T_LEN = sizeof(struct ds_status);
+   memset(Ep1Buffer, 0, sizeof(UEP1_T_LEN));
+
    EA = 1;
    
    while(1) { }
