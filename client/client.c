@@ -93,6 +93,9 @@ int main(int argc, char **argv) {
    libusb_device_handle *dev = libusb_open_device_with_vid_pid(ctx, 0x1d50, 0x5711);
    assert(dev);
 
+   assert(libusb_claim_interface(dev, 0) == 0);
+   assert(libusb_set_interface_alt_setting(dev, 0, 3) == 0);
+
    searchDevices(dev);
 
    libusb_close(dev);

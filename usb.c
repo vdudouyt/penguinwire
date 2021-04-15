@@ -50,7 +50,7 @@ __code struct {
       .bLength = sizeof(cfgDesc.ifDesc),
       .bDescriptorType = USB_DESCR_TYP_INTERF,
       .bInterfaceNumber = 0x00,
-      .bAlternateSetting = 0x00,
+      .bAlternateSetting = 0x03,
       .bNumEndpoints = 3,
       .bInterfaceClass = 0xff,
       .bInterfaceSubClass = 0xff,
