@@ -6,7 +6,7 @@
 #include "usb.h"
 
 #define SET_TX_NAK(ctrl_reg) (ctrl_reg) = (ctrl_reg) & ~ MASK_UEP_T_RES | UEP_T_RES_NAK
-#define UNSET_TX_NAK(ctrl_reg) (ctrl_reg) = (ctrl_reg) & ~ MASK_UEP_T_RES | UEP_T_RES_ACK
+#define SET_TX_ACK(ctrl_reg) (ctrl_reg) = (ctrl_reg) & ~ MASK_UEP_T_RES | UEP_T_RES_ACK
 
 SBIT(LED, 0x90, 1);
 
@@ -53,7 +53,7 @@ bool onW1SearchDevice(__xdata w1SearchCtx *ctx) {
 
    if(ctx->done || wIdx >= 8) {
       UEP3_T_LEN = wIdx * 8;
-      UNSET_TX_NAK(UEP3_CTRL);
+      SET_TX_ACK(UEP3_CTRL);
       return false;
    }
 
