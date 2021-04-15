@@ -4,38 +4,40 @@
 #include "w1_search_devices.h"
 #include "lib/ch554.h"
 #include "usb.h"
+#include "ds2490.h"
 
 SBIT(LED, 0x90, 1);
 
 void Uart1_ISR() __interrupt (INT_NO_UART1);
 void USBInterrupt() __interrupt (INT_NO_USB);
 
+void onW1Reset(uint8_t gotByte);
 void onW1RecvByte(uint8_t status);
 bool onW1SearchDevice(__xdata w1SearchCtx *ctx);
 
-int wIdx;
+unsigned int wIdx;
 
-void onEp0VendorSpecificRequest(__xdata USBSetupRequest *req) {
-   if(req->bRequest == 1) {
-      UEP1_CTRL = UEP1_CTRL & ~ MASK_UEP_T_RES | UEP_T_RES_NAK; // Busy
-      w1Reset(onW1RecvByte);
-   } else if(req->bRequest == 2) {
-      UEP1_CTRL = UEP1_CTRL & ~ MASK_UEP_T_RES | UEP_T_RES_NAK; // Busy
-      w1Write(req->wValue, onW1RecvByte);
-   } else if(req->bRequest == 3) {
-      SET_TX_NAK(UEP3_CTRL); // Busy
-      wIdx = 0;
-      w1SearchDevices(onW1SearchDevice);
-   } else if(req->bRequest == 4) {
-      __xdata uint8_t *buf = getBuf();
-      int i;
-      for(i = 0; i < 64; i++) {
-         Ep1Buffer[i] = buf[i];
-      }
-      UEP1_T_LEN = 64;
-   } else if(req->bRequest == 5) {
-      nextBranch();
+#define COMM_MASK 0xf6
+
+void onEp0VendorSpecificRequest(__xdata USBSetupRequest *setupReq) {
+   if(setupReq->bRequest != COMM_CMD) {
+      return;
    }
+
+   switch(setupReq->wValue & COMM_MASK) {
+      case COMM_1_WIRE_RESET:
+         w1Reset(onW1Reset);
+         break;
+      case COMM_SEARCH_ACCESS:
+         SET_TX_NAK(UEP3_CTRL);
+         wIdx = 0;
+         w1SearchDevices(onW1SearchDevice);
+         break;
+   }
+}
+
+void onW1Reset(uint8_t gotByte) {
+   (void) (gotByte);
 }
 
 void onW1RecvByte(uint8_t gotByte) {
