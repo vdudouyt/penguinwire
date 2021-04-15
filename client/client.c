@@ -49,7 +49,7 @@ void searchDevices(libusb_device_handle *dev) {
 
    unsigned char buf[64];
    int actual_length;
-   libusb_bulk_transfer(dev, 0x81, buf, sizeof(buf), &actual_length, 0);
+   libusb_bulk_transfer(dev, 0x83, buf, sizeof(buf), &actual_length, 0);
    assert(actual_length);
 
    printf("Got devices: ");

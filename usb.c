@@ -11,6 +11,8 @@
 
 __xdata __at (0x0000) uint8_t  Ep0Buffer[0x40];
 __xdata __at (0x0040) uint8_t  Ep1Buffer[0x40];
+__xdata __at (0x0080) uint8_t  Ep2Buffer[0x40];
+__xdata __at (0x00C0) uint8_t  Ep3Buffer[0x40];
 
 __code USBDeviceDescriptor devDesc = {
    .bLength = sizeof(devDesc),
@@ -32,7 +34,7 @@ __code USBDeviceDescriptor devDesc = {
 __code struct {
    USBConfigurationDecriptor cfg;
    USBInterfaceDescriptor ifDesc;
-   USBEndpointDescriptor endpoints[1];
+   USBEndpointDescriptor endpoints[3];
 } cfgDesc = {
    .cfg = {
       .bLength = sizeof(cfgDesc.cfg),
@@ -49,7 +51,7 @@ __code struct {
       .bDescriptorType = USB_DESCR_TYP_INTERF,
       .bInterfaceNumber = 0x00,
       .bAlternateSetting = 0x00,
-      .bNumEndpoints = 1,
+      .bNumEndpoints = 3,
       .bInterfaceClass = 0xff,
       .bInterfaceSubClass = 0xff,
       .bInterfaceProtocol = 0xff,
@@ -60,9 +62,25 @@ __code struct {
          .bLength = sizeof(cfgDesc.endpoints[0]),
          .bDescriptorType = USB_DESCR_TYP_ENDP,
          .bEndpointAddress = 0x81,
-         .bmAttributes = 0x02,
+         .bmAttributes = 0x03, // interrupt
          .wMaxPacketSize = 0x40,
-         .bInterval = 0x00,
+         .bInterval = 10,
+      },
+      {
+         .bLength = sizeof(cfgDesc.endpoints[1]),
+         .bDescriptorType = USB_DESCR_TYP_ENDP,
+         .bEndpointAddress = 0x02,
+         .bmAttributes = 0x02, // bulk
+         .wMaxPacketSize = 0x40,
+         .bInterval = 0,
+      },
+      {
+         .bLength = sizeof(cfgDesc.endpoints[2]),
+         .bDescriptorType = USB_DESCR_TYP_ENDP,
+         .bEndpointAddress = 0x83,
+         .bmAttributes = 0x02, // bulk
+         .wMaxPacketSize = 0x40,
+         .bInterval = 0,
       }
    },
 };
@@ -88,6 +106,16 @@ void USBInit() {
    UEP1_CTRL = bUEP_AUTO_TOG | UEP_R_RES_NAK | UEP_T_RES_ACK;
    UEP1_T_LEN = 0;
    UEP4_1_MOD = bUEP1_TX_EN;
+
+   UEP2_DMA = (uint16_t) Ep2Buffer;
+   UEP2_CTRL = bUEP_AUTO_TOG | UEP_R_RES_ACK | UEP_T_RES_NAK;
+   UEP2_T_LEN = 0;
+   UEP2_3_MOD = bUEP2_RX_EN;
+
+   UEP3_DMA = (uint16_t) Ep3Buffer;
+   UEP3_CTRL = bUEP_AUTO_TOG | UEP_R_RES_NAK | UEP_T_RES_ACK;
+   UEP3_T_LEN = 0;
+   UEP2_3_MOD = bUEP3_TX_EN;
 
    /* Interrupts */
    USB_INT_EN |= bUIE_TRANSFER;

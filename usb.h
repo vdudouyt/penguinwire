@@ -4,5 +4,7 @@ void onEp0VendorSpecificRequest(__xdata USBSetupRequest *setupReq);
 void onEp1TransferDone();
 
 extern __xdata __at (0x0040) uint8_t  Ep1Buffer[0x40];
+extern __xdata __at (0x0080) uint8_t  Ep2Buffer[0x40];
+extern __xdata __at (0x00C0) uint8_t  Ep3Buffer[0x40];
 
 void USBInit();

@@ -23,7 +23,7 @@ void onEp0VendorSpecificRequest(__xdata USBSetupRequest *req) {
       UEP1_CTRL = UEP1_CTRL & ~ MASK_UEP_T_RES | UEP_T_RES_NAK; // Busy
       w1Write(req->wValue, onW1RecvByte);
    } else if(req->bRequest == 3) {
-      UEP1_CTRL = UEP1_CTRL & ~ MASK_UEP_T_RES | UEP_T_RES_NAK; // Busy
+      UEP3_CTRL = UEP3_CTRL & ~ MASK_UEP_T_RES | UEP_T_RES_NAK; // Busy
       wIdx = 0;
       w1SearchDevices(onW1SearchDevice);
    } else if(req->bRequest == 4) {
@@ -45,12 +45,12 @@ void onW1RecvByte(uint8_t gotByte) {
 }
 
 bool onW1SearchDevice(__xdata w1SearchCtx *ctx) {
-   memcpy(&Ep1Buffer[wIdx * 8], ctx->romID, 8);
+   memcpy(&Ep3Buffer[wIdx * 8], ctx->romID, 8);
    wIdx++;
 
    if(ctx->done || wIdx >= 8) {
-      UEP1_T_LEN = wIdx * 8;
-      UEP1_CTRL = UEP1_CTRL & ~ MASK_UEP_T_RES | UEP_T_RES_ACK;
+      UEP3_T_LEN = wIdx * 8;
+      UEP3_CTRL = UEP3_CTRL & ~ MASK_UEP_T_RES | UEP_T_RES_ACK;
       return false;
    }
 
