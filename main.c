@@ -5,6 +5,9 @@
 #include "lib/ch554.h"
 #include "usb.h"
 
+#define SET_TX_NAK(ctrl_reg) (ctrl_reg) = (ctrl_reg) & ~ MASK_UEP_T_RES | UEP_T_RES_NAK
+#define UNSET_TX_NAK(ctrl_reg) (ctrl_reg) = (ctrl_reg) & ~ MASK_UEP_T_RES | UEP_T_RES_ACK
+
 SBIT(LED, 0x90, 1);
 
 void Uart1_ISR() __interrupt (INT_NO_UART1);
@@ -23,7 +26,7 @@ void onEp0VendorSpecificRequest(__xdata USBSetupRequest *req) {
       UEP1_CTRL = UEP1_CTRL & ~ MASK_UEP_T_RES | UEP_T_RES_NAK; // Busy
       w1Write(req->wValue, onW1RecvByte);
    } else if(req->bRequest == 3) {
-      UEP3_CTRL = UEP3_CTRL & ~ MASK_UEP_T_RES | UEP_T_RES_NAK; // Busy
+      SET_TX_NAK(UEP3_CTRL); // Busy
       wIdx = 0;
       w1SearchDevices(onW1SearchDevice);
    } else if(req->bRequest == 4) {
@@ -50,7 +53,7 @@ bool onW1SearchDevice(__xdata w1SearchCtx *ctx) {
 
    if(ctx->done || wIdx >= 8) {
       UEP3_T_LEN = wIdx * 8;
-      UEP3_CTRL = UEP3_CTRL & ~ MASK_UEP_T_RES | UEP_T_RES_ACK;
+      UNSET_TX_NAK(UEP3_CTRL);
       return false;
    }
 
