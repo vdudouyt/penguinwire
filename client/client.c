@@ -98,5 +98,6 @@ int main(int argc, char **argv) {
 
    searchDevices(dev);
 
+   assert(libusb_release_interface(dev, 0) == 0);
    libusb_close(dev);
 }
