@@ -5,9 +5,6 @@
 #include "lib/ch554.h"
 #include "usb.h"
 
-#define SET_TX_NAK(ctrl_reg) (ctrl_reg) = (ctrl_reg) & ~ MASK_UEP_T_RES | UEP_T_RES_NAK
-#define SET_TX_ACK(ctrl_reg) (ctrl_reg) = (ctrl_reg) & ~ MASK_UEP_T_RES | UEP_T_RES_ACK
-
 SBIT(LED, 0x90, 1);
 
 void Uart1_ISR() __interrupt (INT_NO_UART1);
