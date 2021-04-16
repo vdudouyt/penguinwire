@@ -21,11 +21,13 @@ unsigned int wIdx;
 #define COMM_MASK 0xf6
 
 static void SetDeviceBusy() {
+   LED = 1;
    struct ds_status *status = (struct ds_status*) Ep1Buffer;
    status->status = status->data_in_buffer_status = 0;
 }
 
 static void SetDeviceReady() {
+   LED = 0;
    struct ds_status *status = (struct ds_status*) Ep1Buffer;
    status->status = ST_IDLE | ST_HALT;
    status->data_in_buffer_status = 1;
