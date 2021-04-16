@@ -20,6 +20,17 @@ unsigned int wIdx;
 
 #define COMM_MASK 0xf6
 
+static void SetDeviceBusy() {
+   struct ds_status *status = (struct ds_status*) Ep1Buffer;
+   status->status = status->data_in_buffer_status = 0;
+}
+
+static void SetDeviceReady() {
+   struct ds_status *status = (struct ds_status*) Ep1Buffer;
+   status->status = ST_IDLE | ST_HALT;
+   status->data_in_buffer_status = 1;
+}
+
 void onEp0VendorSpecificRequest(__xdata USBSetupRequest *setupReq) {
    if(setupReq->bRequest != COMM_CMD) {
       return;
@@ -29,12 +40,16 @@ void onEp0VendorSpecificRequest(__xdata USBSetupRequest *setupReq) {
       case COMM_1_WIRE_RESET:
          w1Reset(onW1Reset);
          break;
+      case COMM_BYTE_IO:
+         SET_TX_NAK(UEP3_CTRL);
+         SetDeviceBusy();
+         w1Write(setupReq->wValue, onW1RecvByte);
+         break;
       case COMM_SEARCH_ACCESS:
          SET_TX_NAK(UEP3_CTRL);
          wIdx = 0;
 
-         struct ds_status *status = (struct ds_status*) Ep1Buffer;
-         status->status = status->data_in_buffer_status = 0;
+         SetDeviceBusy();
          w1SearchDevices(onW1SearchDevice);
          break;
    }
@@ -45,9 +60,10 @@ void onW1Reset(uint8_t gotByte) {
 }
 
 void onW1RecvByte(uint8_t gotByte) {
-   Ep1Buffer[0] = gotByte;
-   UEP1_T_LEN = 1;
-   UEP1_CTRL = UEP1_CTRL & ~ MASK_UEP_T_RES | UEP_T_RES_ACK;
+   Ep3Buffer[0] = gotByte;
+   UEP3_T_LEN = 1;
+   SetDeviceReady();
+   SET_TX_ACK(UEP3_CTRL);
 }
 
 bool onW1SearchDevice(__xdata w1SearchCtx *ctx) {
@@ -56,9 +72,7 @@ bool onW1SearchDevice(__xdata w1SearchCtx *ctx) {
 
    if(ctx->done || wIdx >= 8) {
       UEP3_T_LEN = wIdx * 8;
-      struct ds_status *status = (struct ds_status*) Ep1Buffer;
-      status->status = ST_IDLE | ST_HALT;
-      status->data_in_buffer_status = 1;
+      SetDeviceReady();
       SET_TX_ACK(UEP3_CTRL);
       return false;
    }
