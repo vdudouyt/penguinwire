@@ -22,8 +22,8 @@ __code USBDeviceDescriptor devDesc = {
    .bDeviceSubClass = 0x00,
    .bDeviceProtocol = 0x00,
    .bMaxPacketSize0 = 0x40,
-   .idVendor = 0x04fa,
-   .idProduct = 0x2490,
+   .idVendor = 0x1d50,
+   .idProduct = 0x5711,
    .bcdDevice = 0x0100,
    .iManufacturer = 0x00,
    .iProduct = 0x00,
@@ -131,6 +131,7 @@ void USBInterrupt() __interrupt (INT_NO_USB) {
 
       switch(ep) {
          case 0: Ep0Handler(); break;
+         case 2: onEp2TransferDone(); break;
       }
 
       UIF_TRANSFER = 0;
@@ -165,10 +166,10 @@ void Ep0Handler() {
          } else if(setupReq->bRequest == USB_SET_ADDRESS) {
             setAddressRequest = setupReq->wValue;
          }
-      }
 
-      UEP0_T_LEN = bytesToTransmit;
-      UEP0_CTRL = bUEP_T_TOG | UEP_R_RES_ACK | UEP_T_RES_ACK;
+         UEP0_T_LEN = bytesToTransmit;
+         UEP0_CTRL = bUEP_T_TOG | UEP_R_RES_ACK | UEP_T_RES_ACK;
+      }
    }
 
    if(token == UIS_TOKEN_IN) {

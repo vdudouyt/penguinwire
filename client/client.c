@@ -33,8 +33,11 @@ int main(int argc, char **argv) {
    assert(libusb_claim_interface(dev, 0) == 0);
    assert(libusb_set_interface_alt_setting(dev, 0, 3) == 0);
 
-   searchDevices(dev);
+   libusb_control_transfer(dev, 0x40, 0x01, 0x0042, 0, NULL, 0, 0); // Reset
+   libusb_control_transfer(dev, 0x40, 0x01, 0x0052, 0xCC, NULL, 0, 0); // Skip ROM
 
-   assert(libusb_release_interface(dev, 0) == 0);
-   libusb_close(dev);
+   int actual_length;
+   char buf[1];
+   libusb_bulk_transfer(dev, 0x83, buf, sizeof(buf), &actual_length, 0);
+   assert(actual_length);
 }

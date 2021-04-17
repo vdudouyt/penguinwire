@@ -13,10 +13,11 @@ void Uart1_ISR() __interrupt (INT_NO_UART1);
 void USBInterrupt() __interrupt (INT_NO_USB);
 
 void onW1Reset(uint8_t gotByte);
-void onW1RecvByte(uint8_t status);
+void onW1RecvByte(uint8_t gotByte);
 bool onW1SearchDevice(__xdata w1SearchCtx *ctx);
 
 unsigned int wIdx;
+unsigned int bytesReceived = 0;
 
 #define COMM_MASK 0xf6
 
@@ -24,6 +25,7 @@ static void SetDeviceBusy() {
    LED = 1;
    struct ds_status *status = (struct ds_status*) Ep1Buffer;
    status->status = status->data_in_buffer_status = 0;
+   UEP0_CTRL = UEP_R_RES_NAK | UEP_T_RES_NAK;
 }
 
 static void SetDeviceReady() {
@@ -31,6 +33,11 @@ static void SetDeviceReady() {
    struct ds_status *status = (struct ds_status*) Ep1Buffer;
    status->status = ST_IDLE | ST_HALT;
    status->data_in_buffer_status = 1;
+   UEP0_CTRL = bUEP_T_TOG | UEP_R_RES_ACK | UEP_T_RES_ACK;
+}
+
+void onEp2TransferDone() {
+   bytesReceived = USB_RX_LEN;
 }
 
 void onEp0VendorSpecificRequest(__xdata USBSetupRequest *setupReq) {
@@ -40,12 +47,13 @@ void onEp0VendorSpecificRequest(__xdata USBSetupRequest *setupReq) {
 
    switch(setupReq->wValue & COMM_MASK) {
       case COMM_1_WIRE_RESET:
+         SetDeviceBusy();
          w1Reset(onW1Reset);
          break;
       case COMM_BYTE_IO:
          SET_TX_NAK(UEP3_CTRL);
          SetDeviceBusy();
-         w1Write(setupReq->wValue, onW1RecvByte);
+         w1Write(setupReq->wIndex, onW1RecvByte);
          break;
       case COMM_SEARCH_ACCESS:
          SET_TX_NAK(UEP3_CTRL);
@@ -59,6 +67,7 @@ void onEp0VendorSpecificRequest(__xdata USBSetupRequest *setupReq) {
 
 void onW1Reset(uint8_t gotByte) {
    (void) (gotByte);
+   SetDeviceReady();
 }
 
 void onW1RecvByte(uint8_t gotByte) {
