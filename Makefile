@@ -13,4 +13,4 @@ clean:
 	rm *.ihx *.rel *.bin
 
 flash: all
-	count_times python3 -m ch55xtool -r -f penguinwire.bin
+	python3 -m ch55xtool -r -f penguinwire.bin
