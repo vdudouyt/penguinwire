@@ -33,6 +33,7 @@ static void SetDeviceReady() {
    struct ds_status *status = (struct ds_status*) Ep1Buffer;
    status->status = ST_IDLE | ST_HALT;
    status->data_in_buffer_status = 1;
+   UEP0_T_LEN = 0;
    UEP0_CTRL = bUEP_T_TOG | UEP_R_RES_ACK | UEP_T_RES_ACK;
 }
 
