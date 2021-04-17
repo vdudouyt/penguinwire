@@ -105,17 +105,17 @@ void USBInit() {
    UEP1_DMA = (uint16_t) Ep1Buffer;
    UEP1_CTRL = bUEP_AUTO_TOG | UEP_R_RES_NAK | UEP_T_RES_ACK;
    UEP1_T_LEN = 0;
-   UEP4_1_MOD = bUEP1_TX_EN;
+   UEP4_1_MOD |= bUEP1_TX_EN;
 
    UEP2_DMA = (uint16_t) Ep2Buffer;
    UEP2_CTRL = bUEP_AUTO_TOG | UEP_R_RES_ACK | UEP_T_RES_NAK;
    UEP2_T_LEN = 0;
-   UEP2_3_MOD = bUEP2_RX_EN;
+   UEP2_3_MOD |= bUEP2_RX_EN;
 
    UEP3_DMA = (uint16_t) Ep3Buffer;
    UEP3_CTRL = bUEP_AUTO_TOG | UEP_R_RES_NAK | UEP_T_RES_ACK;
    UEP3_T_LEN = 0;
-   UEP2_3_MOD = bUEP3_TX_EN;
+   UEP2_3_MOD |= bUEP3_TX_EN;
 
    /* Interrupts */
    USB_INT_EN |= bUIE_TRANSFER;
