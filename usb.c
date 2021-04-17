@@ -22,8 +22,13 @@ __code USBDeviceDescriptor devDesc = {
    .bDeviceSubClass = 0x00,
    .bDeviceProtocol = 0x00,
    .bMaxPacketSize0 = 0x40,
+#ifdef DEBUG
    .idVendor = 0x1d50,
    .idProduct = 0x5711,
+#else
+   .idVendor = 0x04fa,
+   .idProduct = 0x2490,
+#endif
    .bcdDevice = 0x0100,
    .iManufacturer = 0x00,
    .iProduct = 0x00,
