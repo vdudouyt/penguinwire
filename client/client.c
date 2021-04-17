@@ -22,6 +22,17 @@ void searchDevices(libusb_device_handle *dev) {
    printf("\n");
 }
 
+void printBuf(unsigned char *buf, size_t size) {
+   printf("Got bytes: ");
+
+   size_t i;
+   for(i = 0; i < size; i++) {
+      printf("%02x ", buf[i]);
+   }
+
+   printf("\n");
+}
+
 int main(int argc, char **argv) {
    int r;
    libusb_context *ctx = NULL;
@@ -34,10 +45,15 @@ int main(int argc, char **argv) {
    assert(libusb_set_interface_alt_setting(dev, 0, 3) == 0);
 
    libusb_control_transfer(dev, 0x40, 0x01, 0x0042, 0, NULL, 0, 0); // Reset
-   libusb_control_transfer(dev, 0x40, 0x01, 0x0052, 0xCC, NULL, 0, 0); // Skip ROM
 
+   char buf[] = { 0xCC };
    int actual_length;
-   char buf[1];
-   libusb_bulk_transfer(dev, 0x83, buf, sizeof(buf), &actual_length, 0);
+   libusb_bulk_transfer(dev, 0x02, buf, sizeof(buf), &actual_length, 0);
+
+   char buf2[3];
+   libusb_control_transfer(dev, 0x40, 0x01, 0x0074, 0, NULL, 0, 0); // Block IO
+   libusb_bulk_transfer(dev, 0x83, buf2, sizeof(buf2), &actual_length, 0);
    assert(actual_length);
+
+   printBuf(buf2, actual_length);
 }
