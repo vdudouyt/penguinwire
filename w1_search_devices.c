@@ -41,6 +41,7 @@ void onW1Reset(uint8_t gotByte) {
    }
 
    if(ctx.status != 0) {
+      ctx.done = 1;
       searchDeviceCallback(&ctx);
       return;
    }
@@ -71,6 +72,7 @@ void onReadBitInv(uint8_t gotByte) {
    if(b == 1 && bInv == 1) {
       /* No devices responded */
       ctx.status = W1SEARCH_ERR;
+      ctx.done = 1;
       searchDeviceCallback(&ctx);
       return;
    } else if(b == 0 && bInv == 0) {

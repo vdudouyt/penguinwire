@@ -100,8 +100,10 @@ void onW1RecvBlock(uint8_t gotByte) {
 }
 
 bool onW1SearchDevice(__xdata w1SearchCtx *ctx) {
-   memcpy(&Ep3Buffer[wIdx * 8], ctx->romID, 8);
-   wIdx++;
+   if(ctx->status == W1SEARCH_DEVICE_FOUND) {
+      memcpy(&Ep3Buffer[wIdx * 8], ctx->romID, 8);
+      wIdx++;
+   }
 
    if(ctx->done || wIdx >= 8) {
       UEP3_T_LEN = wIdx * 8;
