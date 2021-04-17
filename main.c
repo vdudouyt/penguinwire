@@ -14,6 +14,7 @@ void USBInterrupt() __interrupt (INT_NO_USB);
 
 void onW1Reset(uint8_t gotByte);
 void onW1RecvByte(uint8_t gotByte);
+void onW1RecvBlock(uint8_t gotByte);
 bool onW1SearchDevice(__xdata w1SearchCtx *ctx);
 
 unsigned int wIdx;
@@ -56,6 +57,12 @@ void onEp0VendorSpecificRequest(__xdata USBSetupRequest *setupReq) {
          SetDeviceBusy();
          w1Write(setupReq->wIndex, onW1RecvByte);
          break;
+      case COMM_BLOCK_IO:
+         SET_TX_NAK(UEP3_CTRL);
+         SetDeviceBusy();
+         wIdx = 0;
+         w1Write(Ep2Buffer[wIdx], onW1RecvBlock);
+         break;
       case COMM_SEARCH_ACCESS:
          SET_TX_NAK(UEP3_CTRL);
          wIdx = 0;
@@ -76,6 +83,20 @@ void onW1RecvByte(uint8_t gotByte) {
    UEP3_T_LEN = 1;
    SetDeviceReady();
    SET_TX_ACK(UEP3_CTRL);
+}
+
+void onW1RecvBlock(uint8_t gotByte) {
+   Ep3Buffer[wIdx] = gotByte;
+   wIdx++;
+
+   if(wIdx < bytesReceived) {
+      // Read some more
+      w1Write(Ep2Buffer[wIdx], onW1RecvBlock);
+   } else {
+      SetDeviceReady();
+      UEP3_T_LEN = wIdx;
+      SET_TX_ACK(UEP3_CTRL);
+   }
 }
 
 bool onW1SearchDevice(__xdata w1SearchCtx *ctx) {
