@@ -19,7 +19,8 @@ $ make && make flash
 
 ## Wiring
 * P1.6 and P1.7 should be short-circuited and connected to DQ
-* Pull-up resistor is optional but highly recommended
+* Optional 1..4K pull-up resistor on DQ
+* UART1 is configured in 8051 quasi-bidirectional mode, so a blocking diode is not required
 * Two 0.1uF blocking capacitors between Vcc-GND and V33-GND as in CH552 datasheet
 * Optional status LED on P1.1
 * If you need to reprogram the device, connect a 10k resistor between USB_DP and V33 while powering up
